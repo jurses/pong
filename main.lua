@@ -18,7 +18,10 @@ function love.load()
 
    pelota = {}
    pelota.dim = {x = 40 , y = 40}
-   pelota.vel = {x = -300, y = 300}
+   pelota.velG = 600
+   pelota.ang = 5/4 * math.pi --225º dirección: 45º en el 3º cuadrante
+   pelota.vel = {x = pelota.velG * math.pow(math.cos(pelota.ang), 2),
+                 y = pelota.velG * math.pow(math.sin(pelota.ang), 2)}
    pelota.pos = { x = width/2 - pelota.dim.x/2, y = height/2 - pelota.dim.y/2 }
 
    fuenteGrande = gr.newFont(32)
@@ -29,7 +32,6 @@ function love.load()
    vel.x = pelota.vel.x
    vel.y = pelota.vel.y
    pelotaStop = false
-   pelota.velG = 300
 end
 
 function invPelota()
@@ -38,7 +40,7 @@ function invPelota()
 end
 
 function angPelota(pala, altura) --CORRECTO
-   return ((2 * (((pala - (pelota.pos.y + pelota.dim.y / 2)) / altura) + 0.5)) * 1/4 * math.pi)
+   return ((2 * (((pala - (pelota.pos.y + pelota.dim.y / 2)) / altura) + 0.5)) * 1/4 * math.pi) -- Va desde +1 hasta -1
 end
 
 function colision1()
@@ -101,13 +103,7 @@ function love.update(dt)
    elseif kb.isDown("down") and p2.pos.y + p2.dim.y < height then
       p2.pos.y = p2.pos.y + p2.vel * dt
    end
---[[
-   if pelota.dir == 1 then
-      pelota.pos.x = pelota.pos.x - pelota.vel * dt
-   else
-      pelota.pos.x = pelota.pos.x - pelota.vel * dt
-   end
-   ]]--
+
       --TECHO--
    if pelota.pos.y < 0 then
       pelota.vel.y = math.abs(pelota.vel.y)
@@ -117,19 +113,19 @@ function love.update(dt)
       --TECHO--
 
    if colision1() then
-      local angulo = angPelota(p1.pos.y, p1.dim.y)
-    --pelota.vel.x = math.abs(pelota.vel.x)
+      local LG = angPelota(p1.pos.y, p1.dim.y)
       print("Chocó con la pala1")
-      pelota.vel.x = -1 * (math.pow(math.cos(angulo),2) * pelota.vel.x) * 1.2
-      pelota.vel.y = math.pow(math.sin(angulo),2) * pelota.vel.y * 1.2
+      local anguloR = (5/4 * math.pi)/LG
+      pelota.vel.x = pelota.velG * math.cos(LG)
+      pelota.vel.y = pelota.velG * math.sin(LG)
    end
 
    if colision2() then
-      local angulo = angPelota(p2.pos.y, p2.dim.y)
-    --pelota.vel.x = -math.abs(pelota.vel.x)
+      local LG = angPelota(p2.pos.y, p2.dim.y)
       print("Chocó con la pala2")
-      pelota.vel.x = -1 * math.abs(math.pow(math.cos(angulo),2) * pelota.vel.x) * 1.2
-      pelota.vel.y = math.pow(math.sin(angulo),2) * pelota.vel.y * 1.2
+      local anguloR = (5/4 * math.pi)/LG
+      pelota.vel.x = -math.abs(pelota.velG * math.cos(LG))
+      pelota.vel.y = pelota.velG * math.sin(LG)
    end
 
    pelota.pos.x = pelota.pos.x + (pelota.vel.x * dt)
