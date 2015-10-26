@@ -4,6 +4,8 @@ function love.load()
    width = gr.getWidth()
    height = gr.getHeight()
 
+   require("jugarreta")
+
    p1 = {}
    p1.score = 0
    p1.dim = {x = 50, y = 150}
@@ -81,14 +83,26 @@ function love.keypressed(key)
       vel.y = pelota.vel.y
       pelota.vel.x = 0
       pelota.vel.y = 0
-      pelotaStop=true
+      pelotaStop = true
    end
 
    if key == "o" then
       pelota.vel.x = vel.x
       pelota.vel.y = vel.y
-      pelotaStop=false
+      pelotaStop = false
    end
+   
+      --AGARRE--
+   if key == "a" then 
+      if agarrar(colision1()) then
+         vel.x = pelota.vel.x
+         vel.y = pelota.vel.y
+         pelota.vel.x = 0
+         pelota.vel.y = 0
+         pelotaStop = true
+      end
+   end
+      --AGARRE--
 end
 
 function love.update(dt)
@@ -116,16 +130,16 @@ function love.update(dt)
       local LG = angPelota(p1.pos.y, p1.dim.y)
       print("Chocó con la pala1")
       local anguloR = (5/4 * math.pi)/LG
-      pelota.vel.x = pelota.velG * math.cos(LG)
-      pelota.vel.y = pelota.velG * math.sin(LG)
+      pelota.vel.x = math.abs(pelota.velG * math.cos(anguloR))
+      pelota.vel.y = pelota.velG * math.sin(anguloR)
    end
 
    if colision2() then
       local LG = angPelota(p2.pos.y, p2.dim.y)
       print("Chocó con la pala2")
       local anguloR = (5/4 * math.pi)/LG
-      pelota.vel.x = -math.abs(pelota.velG * math.cos(LG))
-      pelota.vel.y = pelota.velG * math.sin(LG)
+      pelota.vel.x = -1 * math.abs(pelota.velG * math.cos(anguloR))
+      pelota.vel.y = pelota.velG * math.sin(anguloR)
    end
 
    pelota.pos.x = pelota.pos.x + (pelota.vel.x * dt)
@@ -148,6 +162,7 @@ function love.update(dt)
          pelota.pos.x = pelota.pos.x + pelota.velG * dt
       end
    end
+
 end
 
 function love.draw()
@@ -164,9 +179,11 @@ function love.draw()
    gr.setFont(fuenteGrande)
    gr.printf("Jugador 1: " .. p1.score .. "\nJugador 2: " .. p2.score,0,0,width,"center")
 
-      --PrintDebuj--
+      --PrintDebuj-- 
+      --[[
    gr.setFont(fuenteDebug)
    gr.print("Ángulo de la pelota: " ..angPelota(p1.pos.y, p1.dim.y).. 
    "\n Velocidad X pelota: " ..pelota.vel.x..
    "\n Velocidad Y pelota: " ..pelota.vel.y,0,500)
+      --]]
 end
