@@ -11,12 +11,16 @@ function love.load()
    p1.dim = {x = 50, y = 150}
    p1.pos ={x = 0, y = 50}
    p1.vel = 600
+   p1.move = false      --¿Se están moviendo?, al principio no pero cuando pulsas 'w' o 's' sí.
+   p1.canMove = true    --¿Se puede mover?, sí
 
    p2 = {}
    p2.score = 0
    p2.dim = {x = 50, y = 150}
    p2.pos = {x = width - p2.dim.x, y = 40}
    p2.vel = 600
+   p2.move = false
+   p2.canMove = true
 
    pelota = {}
    pelota.dim = {x = 40 , y = 40}
@@ -92,30 +96,27 @@ function love.keypressed(key)
       pelotaStop = false
    end
    
-      --AGARRE--
-   if key == "a" then 
-      if agarrar(colision1()) then
-         vel.x = pelota.vel.x
-         vel.y = pelota.vel.y
-         pelota.vel.x = 0
-         pelota.vel.y = 0
-         pelotaStop = true
-      end
-   end
-      --AGARRE--
 end
 
 function love.update(dt)
-   if kb.isDown("w") and p1.pos.y > 0 then
+   if kb.isDown("w") and p1.pos.y > 0 and p1.canMove then
       p1.pos.y = p1.pos.y - p1.vel * dt
-   elseif kb.isDown("s") and p1.pos.y + p1.dim.y < height then
+      p1.move = true
+   elseif kb.isDown("s") and p1.pos.y + p1.dim.y < height and p1.canMove then
       p1.pos.y = p1.pos.y + p1.vel * dt
+   else
+      p2.move = false
    end
+      
 
-   if kb.isDown("up") and p2.pos.y > 0 then
+   if kb.isDown("up") and p2.pos.y > 0 and p2.canMove then
       p2.pos.y = p2.pos.y - p2.vel * dt
-   elseif kb.isDown("down") and p2.pos.y + p2.dim.y < height then
+      p1.move = true
+   elseif kb.isDown("down") and p2.pos.y + p2.dim.y < height and p2.canMove then
       p2.pos.y = p2.pos.y + p2.vel * dt
+      p2.move = true
+   else
+      p2.move = false
    end
 
       --TECHO--
@@ -132,6 +133,15 @@ function love.update(dt)
       local anguloR = (5/4 * math.pi)/LG
       pelota.vel.x = math.abs(pelota.velG * math.cos(anguloR))
       pelota.vel.y = pelota.velG * math.sin(anguloR)
+      if kb.isDown("a") then
+         vel.x = pelota.vel.x
+         vel.y = pelota.vel.y
+         pelota.vel.x = 0 
+         pelota.vel.y = 0
+         if p1.move then
+            pelota.pos.y = pelota.pos.y + (p1.vel * dt)
+         end
+      end
    end
 
    if colision2() then
@@ -187,3 +197,4 @@ function love.draw()
    "\n Velocidad Y pelota: " ..pelota.vel.y,0,500)
       --]]
 end
+
