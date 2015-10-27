@@ -4,15 +4,11 @@ function love.load()
    width = gr.getWidth()
    height = gr.getHeight()
 
-   require("jugarreta")
-
    p1 = {}
    p1.score = 0
    p1.dim = {x = 50, y = 150}
    p1.pos ={x = 0, y = 50}
    p1.vel = 600
-   p1.move = false      --¿Se están moviendo?, al principio no pero cuando pulsas 'w' o 's' sí.
-   p1.canMove = true    --¿Se puede mover?, sí
 
    p2 = {}
    p2.score = 0
@@ -28,6 +24,7 @@ function love.load()
    pelota.ang = 5/4 * math.pi --225º dirección: 45º en el 3º cuadrante
    pelota.vel = {x = pelota.velG * math.pow(math.cos(pelota.ang), 2),
                  y = pelota.velG * math.pow(math.sin(pelota.ang), 2)}
+   pelota.velI = 1.1
    pelota.pos = { x = width/2 - pelota.dim.x/2, y = height/2 - pelota.dim.y/2 }
 
    fuenteGrande = gr.newFont(32)
@@ -99,24 +96,17 @@ function love.keypressed(key)
 end
 
 function love.update(dt)
-   if kb.isDown("w") and p1.pos.y > 0 and p1.canMove then
+   if kb.isDown("w") and p1.pos.y > 0 then
       p1.pos.y = p1.pos.y - p1.vel * dt
-      p1.move = true
-   elseif kb.isDown("s") and p1.pos.y + p1.dim.y < height and p1.canMove then
+   elseif kb.isDown("s") and p1.pos.y + p1.dim.y < height  then
       p1.pos.y = p1.pos.y + p1.vel * dt
-   else
-      p2.move = false
    end
       
 
-   if kb.isDown("up") and p2.pos.y > 0 and p2.canMove then
+   if kb.isDown("up") and p2.pos.y > 0  then
       p2.pos.y = p2.pos.y - p2.vel * dt
-      p1.move = true
-   elseif kb.isDown("down") and p2.pos.y + p2.dim.y < height and p2.canMove then
+   elseif kb.isDown("down") and p2.pos.y + p2.dim.y < height then
       p2.pos.y = p2.pos.y + p2.vel * dt
-      p2.move = true
-   else
-      p2.move = false
    end
 
       --TECHO--
@@ -128,23 +118,16 @@ function love.update(dt)
       --TECHO--
 
    if colision1() then
+      pelota.velG = pelota.velG * pelota.velI
       local LG = angPelota(p1.pos.y, p1.dim.y)
       print("Chocó con la pala1")
       local anguloR = (5/4 * math.pi)/LG
       pelota.vel.x = math.abs(pelota.velG * math.cos(anguloR))
       pelota.vel.y = pelota.velG * math.sin(anguloR)
-      if kb.isDown("a") then
-         vel.x = pelota.vel.x
-         vel.y = pelota.vel.y
-         pelota.vel.x = 0 
-         pelota.vel.y = 0
-         if p1.move then
-            pelota.pos.y = pelota.pos.y + (p1.vel * dt)
-         end
-      end
    end
 
    if colision2() then
+      pelota.velG = pelota.velG * pelota.velI
       local LG = angPelota(p2.pos.y, p2.dim.y)
       print("Chocó con la pala2")
       local anguloR = (5/4 * math.pi)/LG
@@ -156,6 +139,7 @@ function love.update(dt)
    pelota.pos.y = pelota.pos.y + (pelota.vel.y * dt)
 
    if muerte() then
+      pelota.velG = 600
       puntuar()
       invPelota()
       print("Ha muerto la pelota")
