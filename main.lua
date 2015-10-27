@@ -4,15 +4,14 @@ function love.load()
    width = gr.getWidth()
    height = gr.getHeight()
 
-   require("jugarreta")
-
    p1 = {}
    p1.score = 0
    p1.dim = {x = 50, y = 150}
    p1.pos ={x = 0, y = 50}
    p1.vel = 600
    p1.move = false      --¿Se están moviendo?, al principio no pero cuando pulsas 'w' o 's' sí.
-   p1.canMove = true    --¿Se puede mover?, sí
+   p1.canMove = true    --¿Se puede mover?, sí.
+   p1.dir = nil         --Valor Bool, True indica que se mueve '+', false indica '-'.
 
    p2 = {}
    p2.score = 0
@@ -21,6 +20,7 @@ function love.load()
    p2.vel = 600
    p2.move = false
    p2.canMove = true
+   p1.dir = nil
 
    pelota = {}
    pelota.dim = {x = 40 , y = 40}
@@ -47,6 +47,19 @@ end
 
 function angPelota(pala, altura) --CORRECTO
    return ((2 * (((pala - (pelota.pos.y + pelota.dim.y / 2)) / altura) + 0.5)) * 1/4 * math.pi) -- Va desde +1 hasta -1
+end
+
+function agarrar(pala)
+   local dt = love.timer.getDelta()
+   vel.x = pelota.vel.x
+   vel.y = pelota.vel.y
+   pelota.vel.x = 0 
+   pelota.vel.y = 0
+   if pala.move and pala.dir then
+      pelota.pos.y = pelota.pos.y - (pala.vel * dt)
+   elseif pala.move and not pala.dir then
+      pelota.pos.y = pelota.pos.y + (pala.vel * dt)
+   end
 end
 
 function colision1()
@@ -95,26 +108,30 @@ function love.keypressed(key)
       pelota.vel.y = vel.y
       pelotaStop = false
    end
-   
 end
 
 function love.update(dt)
    if kb.isDown("w") and p1.pos.y > 0 and p1.canMove then
       p1.pos.y = p1.pos.y - p1.vel * dt
       p1.move = true
+      p1.dir = true
    elseif kb.isDown("s") and p1.pos.y + p1.dim.y < height and p1.canMove then
       p1.pos.y = p1.pos.y + p1.vel * dt
+      p1.move = true
+      p1.dir = false
    else
-      p2.move = false
+      p1.move = false
    end
       
 
    if kb.isDown("up") and p2.pos.y > 0 and p2.canMove then
       p2.pos.y = p2.pos.y - p2.vel * dt
-      p1.move = true
+      p2.move = true
+      p2.dir = true 
    elseif kb.isDown("down") and p2.pos.y + p2.dim.y < height and p2.canMove then
       p2.pos.y = p2.pos.y + p2.vel * dt
       p2.move = true
+      p2.dir = false 
    else
       p2.move = false
    end
@@ -134,13 +151,7 @@ function love.update(dt)
       pelota.vel.x = math.abs(pelota.velG * math.cos(anguloR))
       pelota.vel.y = pelota.velG * math.sin(anguloR)
       if kb.isDown("a") then
-         vel.x = pelota.vel.x
-         vel.y = pelota.vel.y
-         pelota.vel.x = 0 
-         pelota.vel.y = 0
-         if p1.move then
-            pelota.pos.y = pelota.pos.y + (p1.vel * dt)
-         end
+         agarrar(p1)
       end
    end
 
@@ -150,6 +161,9 @@ function love.update(dt)
       local anguloR = (5/4 * math.pi)/LG
       pelota.vel.x = -1 * math.abs(pelota.velG * math.cos(anguloR))
       pelota.vel.y = pelota.velG * math.sin(anguloR)
+      if kb.isDown("right") then
+         agarrar(p2)
+      end
    end
 
    pelota.pos.x = pelota.pos.x + (pelota.vel.x * dt)
